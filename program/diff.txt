@@ -1,0 +1,66 @@
+diff --git a/program/system/communication.c b/program/system/communication.c
+index 70e674e..c16bbb9 100644
+--- a/program/system/communication.c
++++ b/program/system/communication.c
+@@ -35,8 +35,8 @@ void send_vehicle_info()
+ {
+ 	mavlink_message_t msg;
+ 	uint8_t buf[MAV_MAX_LEN] = {0};
+-	uint16_t len;
+-
++	uint8_t *buf_ptr;
++	buf_ptr = buf;
+ 	/* Test - QuadCopter Heart Beat */
+ 	mavlink_msg_heartbeat_pack(1, 200, &msg,
+ 		MAV_TYPE_QUADROTOR, 
+@@ -44,8 +44,9 @@ void send_vehicle_info()
+ 		MAV_MODE_GUIDED_ARMED, 
+ 		0, MAV_STATE_ACTIVE
+ 	);
+-	len = mavlink_msg_to_send_buffer(buf, &msg);
+-	send_package(buf, len);
++	buf_ptr += mavlink_msg_to_send_buffer(buf_ptr , &msg);
++	
++	//send_package(buf, len);
+ 		
+ 	/* Test - Position (By GPS) */
+ 	mavlink_msg_global_position_int_pack(1, 220, &msg, /*time*/0,  
+@@ -53,8 +54,9 @@ void send_vehicle_info()
+ 		100*1000, 10 * 1000, 1 * 100, 1 * 100,
+ 		 1 * 100, 45
+ 	);
+-	len = mavlink_msg_to_send_buffer(buf, &msg);
+-	send_package(buf, len);
++	buf_ptr += mavlink_msg_to_send_buffer(buf_ptr, &msg);
++	
++	//send_package(buf, len);
+ 
+ 
+ 	/* Test - Attitude */
+@@ -64,17 +66,20 @@ void send_vehicle_info()
+ 		toRad( system.variable[TRUE_YAW].value ), 
+ 		0.0, 0.0, 0.0
+ 	);
+-	len = mavlink_msg_to_send_buffer(buf, &msg);
+-	send_package(buf, len);
++	buf_ptr += mavlink_msg_to_send_buffer(buf_ptr, &msg);
++	
++	//send_package(buf, len);
+ 
+ 	/* Test - Ack Message */
+ 	mavlink_msg_command_ack_pack(1, 200, &msg, MAV_CMD_NAV_WAYPOINT, MAV_RESULT_ACCEPTED);
+-	len = mavlink_msg_to_send_buffer(buf, &msg);
+-	send_package(buf, len);
++	buf_ptr += mavlink_msg_to_send_buffer(buf_ptr, &msg);
++	
++	//send_package(buf, len);
+ 	/* Test - Debug Message */
+ 	mavlink_msg_named_value_int_pack(1, 200, &msg, 0, "msg-id", received_msg.msgid);
+-	len = mavlink_msg_to_send_buffer(buf, &msg);
+-	send_package(buf, len);
++	buf_ptr += mavlink_msg_to_send_buffer(buf_ptr, &msg);
++	
++	send_package(buf, buf_ptr - buf);
+ }
+ 
+ void ground_station_send_task()
